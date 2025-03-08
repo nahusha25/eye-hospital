@@ -12,6 +12,9 @@
         .card { transition: transform 0.3s, box-shadow 0.3s; background: #161b22; color: white; border-radius: 15px; }
         .card:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(255, 255, 255, 0.3); }
         .navbar { box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1); }
+        input, button { margin: 5px 0; padding: 10px; width: 100%; border-radius: 5px; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
     </style>
 </head>
 <body>
@@ -26,10 +29,10 @@
             <h1>Book an Appointment</h1>
         </div>
         <form id="appointmentForm">
-            <input type="text" id="name" placeholder="Your Name" required><br>
-            <input type="email" id="email" placeholder="Your Email" required><br>
-            <input type="date" id="date" required><br>
-            <input type="time" id="time" required><br>
+            <input type="text" id="name" placeholder="Your Name" required>
+            <input type="email" id="email" placeholder="Your Email" required>
+            <input type="date" id="date" required>
+            <input type="time" id="time" required>
             <button type="submit">Book Appointment</button>
         </form>
         <h2>Booked Appointments</h2>
@@ -38,7 +41,7 @@
     
     <script>
     document.addEventListener("DOMContentLoaded", function () {
-        const API_URL = "https://4307-43-247-156-77.ngrok-free.app/api/appointments"; // Update with your Ngrok URL
+        const API_URL = "https://4307-43-247-156-77.ngrok-free.app/api/appointments"; // Update with your latest Ngrok URL
 
         document.querySelector("#appointmentForm").addEventListener("submit", async function (e) {
             e.preventDefault();
@@ -48,28 +51,39 @@
             const date = document.querySelector("#date").value;
             const time = document.querySelector("#time").value;
 
-            const response = await fetch(API_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, email, date, time }),
-            });
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, email, date, time }),
+                });
 
-            if (response.ok) {
-                alert("Appointment booked successfully!");
-                document.querySelector("#appointmentForm").reset();
-                loadAppointments();
-            } else {
-                alert("Error booking appointment.");
+                if (response.ok) {
+                    alert("Appointment booked successfully!");
+                    document.querySelector("#appointmentForm").reset();
+                    loadAppointments();
+                } else {
+                    alert("Error booking appointment.");
+                }
+            } catch (error) {
+                alert("Failed to connect to the server.");
+                console.error("Error:", error);
             }
         });
 
         async function loadAppointments() {
-            const response = await fetch(API_URL);
-            const appointments = await response.json();
-            const appointmentList = document.querySelector("#appointmentList");
-            appointmentList.innerHTML = appointments.map(app => 
-                `<li>${app.name} - ${app.email} - ${app.date} at ${app.time}</li>`
-            ).join("");
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) throw new Error("Failed to fetch appointments");
+
+                const appointments = await response.json();
+                const appointmentList = document.querySelector("#appointmentList");
+                appointmentList.innerHTML = appointments.map(app => 
+                    `<li>${app.name} - ${app.email} - ${app.date} at ${app.time}</li>`
+                ).join("");
+            } catch (error) {
+                console.error("Error:", error);
+            }
         }
 
         loadAppointments();
